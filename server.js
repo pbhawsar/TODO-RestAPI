@@ -10,8 +10,11 @@ var todoNextId = 1;
 app.use(bodyParser.json());
 app.use(middleware.logger);
 
+// specify the path for static file
+app.use(express.static(__dirname + '/public'));
+
 app.get('/', function (req, res) {
-    res.send('Todo API Root');
+    res.sendFile('index.html');
 });
 
 // GET /todos
