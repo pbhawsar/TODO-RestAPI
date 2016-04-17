@@ -46,13 +46,25 @@ app.get('/todos', function (req, res) {
 //GET /todos/:id
 app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos,{id:todoId});
+  // var matchedTodo = _.findWhere(todos,{id:todoId});
 
-  if (matchedTodo) {
-    res.json(matchedTodo);
-  } else {
-    res.status(404).send();
-  }
+  db.todo.findById(todoId)
+  .then(function (todo) {
+    if(!!todo){
+      res.json(todo.toJSON())
+    }else {
+      res.status(404).send();
+    }
+
+ }, function (e) {
+   res.status(500).send();
+ })
+  //
+  // if (matchedTodo) {
+  //   res.json(matchedTodo);
+  // } else {
+  //   res.status(404).send();
+  // }
 });
 
 //POST /todos
@@ -123,7 +135,7 @@ app.put('/todos/:id', function (req, res) {
   res.json(matchedTodo);
 });
 
-db.sequelize.sync({force:true}).then(function () {
+db.sequelize.sync({force:false}).then(function () {
   app.listen(PORT, function () {
     console.log('Express listening on port ' + PORT + '!');
   });
