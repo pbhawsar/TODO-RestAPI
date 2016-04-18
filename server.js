@@ -196,7 +196,19 @@ app.put('/todos/:id', function (req, res) {
   // _.extend(matchedTodo, validAttributes);
   // res.json(matchedTodo);
 });
-
+ // POST for /users
+ app.post('/users', function(req, res){
+   // sanitize the date to include user and password only
+   var body =   _.pick(req.body,'email','password');
+   db.user.create(body)
+   .then(function(user){
+     res.status(200).json(user.toJSON());
+   })
+   .catch(function (e) {
+     res.status(400).json(e);
+   })
+ })
+ 
 db.sequelize.sync({force:false}).then(function () {
   app.listen(PORT, function () {
     console.log('Express listening on port ' + PORT + '!');
