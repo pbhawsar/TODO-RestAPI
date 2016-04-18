@@ -75,9 +75,9 @@ app.get('/todos/:id', function (req, res) {
       res.status(404).send();
     }
 
- }, function (e) {
-   res.status(500).send();
- })
+  }, function (e) {
+    res.status(500).send();
+  })
   //
   // if (matchedTodo) {
   //   res.json(matchedTodo);
@@ -91,15 +91,15 @@ app.post('/todos', function (req, res) {
   // sanitize the date to include description and completed only
   var body =   _.pick(req.body,'description','completed');
 
-db.todo.create(body)
-.then(function(todo){
-  res.status(200).json(todo.toJSON());
-  console.log(todo.toJSON());
-})
-.catch(function (e) {
-  res.status(400).json(e);
- console.log(e);
-})
+  db.todo.create(body)
+  .then(function(todo){
+    res.status(200).json(todo.toJSON());
+    console.log(todo.toJSON());
+  })
+  .catch(function (e) {
+    res.status(400).json(e);
+    console.log(e);
+  })
   //
   // if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
   //   return res.status(400).send();
@@ -117,22 +117,22 @@ db.todo.create(body)
 app.delete('/todos/:id',function(req, res){
   var todoId = parseInt(req.params.id, 10);
 
-        db.todo.destroy({
-          where:{
-            id:todoId
-          }
-        })
-        .then(function(rowsDeleted){
-          if(rowsDeleted === 0){
-            res.status(404).json({
-              error: 'No matching todo'
-            });
-          } else {
-              res.status(204).send();
-            }
-          }, function(){
-            res.status(500).send();
-          });
+  db.todo.destroy({
+    where:{
+      id:todoId
+    }
+  })
+  .then(function(rowsDeleted){
+    if(rowsDeleted === 0){
+      res.status(404).json({
+        error: 'No matching todo'
+      });
+    } else {
+      res.status(204).send();
+    }
+  }, function(){
+    res.status(500).send();
+  });
   // var matchedTodo = _.findWhere(todos,{id:todoId});
   // if(!matchedTodo){
   //   res.status(404).json({"error":"no matching todo id found to be deleted !"});
@@ -145,30 +145,56 @@ app.delete('/todos/:id',function(req, res){
 
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
+
   var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos, {id: todoId});
   var body = _.pick(req.body, 'description', 'completed');
-  var validAttributes = {};
+  var attributes = {};
 
-  if (!matchedTodo) {
-    return res.status(404).send();
+  if (body.hasOwnProperty('completed')) {
+    attributes.completed = body.completed;
   }
 
-  if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-    validAttributes.completed = body.completed;
-  } else if (body.hasOwnProperty('completed')) {
-    return res.status(400).send();
+  if (body.hasOwnProperty('description')) {
+    attributes.description = body.description;
   }
 
-  if (body.hasOwnProperty('description') && _.isString(body.description) &&
-  body.description.trim().length > 0) {
-    validAttributes.description = body.description;
-  } else if (body.hasOwnProperty('description')) {
-    return res.status(400).send();
-  }
-
-  _.extend(matchedTodo, validAttributes);
-  res.json(matchedTodo);
+  db.todo.findById(todoId).then(function(todo) {
+    if (todo) {
+      todo.update(attributes).then(function(todo) {
+        res.json(todo.toJSON());
+      }, function(e) {
+        res.status(400).json(e);
+      });
+    } else {
+      res.status(404).send();
+    }
+  }, function() {
+    res.status(500).send();
+  });
+  // var todoId = parseInt(req.params.id, 10);
+  // var matchedTodo = _.findWhere(todos, {id: todoId});
+  // var body = _.pick(req.body, 'description', 'completed');
+  // var validAttributes = {};
+  //
+  // if (!matchedTodo) {
+  //   return res.status(404).send();
+  // }
+  //
+  // if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+  //   validAttributes.completed = body.completed;
+  // } else if (body.hasOwnProperty('completed')) {
+  //   return res.status(400).send();
+  // }
+  //
+  // if (body.hasOwnProperty('description') && _.isString(body.description) &&
+  // body.description.trim().length > 0) {
+  //   validAttributes.description = body.description;
+  // } else if (body.hasOwnProperty('description')) {
+  //   return res.status(400).send();
+  // }
+  //
+  // _.extend(matchedTodo, validAttributes);
+  // res.json(matchedTodo);
 });
 
 db.sequelize.sync({force:false}).then(function () {
