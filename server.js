@@ -10,7 +10,9 @@ var PORT = process.env.PORT || 3000;
 var todos = [];
 var todoNextId = 1;
 
-
+//TODO add functionality of due date to a todo and once the due DATE
+//is past due then send email to user using postmark api use moment for
+//date transition
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
